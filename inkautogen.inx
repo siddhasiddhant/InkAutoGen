@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <!-- InkAutoGen - Automated SVG Template Processing -->
+  <name>InkAutoGen - Batch Processing</name>
+  <id>org.inkscape.inkautogen</id>
+  <dependency type="executable" location="extensions">inkautogen.py</dependency>
+  <dependency type="executable" location="extensions">inkex</dependency>
+  
+  <!-- General Options Tab -->
+  <param name="tab" type="notebook">
+    <page name="general_tab" gui-text="General Options">
+      <label>CSV Details:</label>
+      <!-- CSV Input -->
+      <param name="csv_path" type="path" mode="file" gui-text="CSV File Path:" gui-description="Path to CSV file containing replacement data">
+        <file-filter name="CSV files">*.csv</file-filter>
+      </param>
+      
+      <param name="csv_encoding" type="enum" gui-text="CSV File Encoding:" gui-description="Character encoding for CSV file (Auto-detect is recommended)">
+        <item value="autodetect">Auto-detect</item>
+        <item value="utf-8">UTF-8</item>
+        <item value="utf-8-sig">UTF-8 with BOM</item>
+        <item value="utf-16">UTF-16</item>
+        <item value="utf-16-le">UTF-16 LE</item>
+        <item value="utf-16-be">UTF-16 BE</item>
+        <item value="utf-32">UTF-32</item>
+        <item value="utf-32-le">UTF-32 LE</item>
+        <item value="utf-32-be">UTF-32 BE</item>
+        <item value="cp1252">Windows-1252 (Western European)</item>
+        <item value="iso-8859-1">ISO-8859-1 (Latin-1)</item>
+        <item value="iso-8859-15">ISO-8859-15 (Latin-9)</item>
+        <item value="latin-1">Latin-1</item>
+        <item value="windows-1252">Windows 1252</item>
+        <item value="ascii">ASCII</item>
+      </param>
+
+      <!-- Row Selection -->
+      <param name="row_range" type="string" gui-text="Rows to consider from CSV file:" gui-description="Default: all rows. Examples: 1-5 (first 5 rows), 1,4,5,9 (specific rows), 1-5,7,9,13-16,21 (combined), even/odd (even or odd rows only)">all</param>
+
+      <!-- Export Settings -->
+      <separator/>
+      <label></label>
+      <label>Export Details:</label>
+      <param name="export_format" type="enum" gui-text="Export Format:" gui-description="Output file format">
+        <item value="png">PNG</item>
+        <item value="jpg">JPG</item>
+        <item value="svg">SVG</item>
+        <item value="pdf">PDF</item>
+        <item value="ps">PS (PostScript)</item>
+        <item value="eps">EPS</item>
+        <item value="tiff">TIFF</item>
+        <item value="webp">WebP</item>
+      </param>
+      
+      <param name="dpi" type="int" min="72" max="1200" gui-text="Resolution for raster output (DPI):" gui-description="DPI setting for raster formats (PNG, JPG, etc.)">300</param>
+      
+      <param name="relative_path" type="boolean" gui-text="Use relative paths for image references" gui-description="Use relative paths instead of absolute paths for image references in SVGs (applicable only for SVG format)">false</param>
+      
+      <param name="apply_layer_visibility" type="boolean" gui-text="Apply data to elements only if respective layer is visible" gui-description="This option is applicable to all elements except layer elements">false</param>
+      
+      <!-- Output Settings -->
+      <separator/>
+      <label></label>
+      <label>Output Details:</label>
+      <param name="output_path" type="path" mode="folder" gui-text="Output Directory:" gui-description="Directory path for output files">/tmp</param>
+      
+      <!-- Filename Pattern -->
+      <param name="filename_pattern" type="string" gui-text="Output File Name Pattern:" gui-description="Pattern for output filenames. Use {count:format} for row index, {date:format} for date, {time} for time, %csv_header% for column values">output_{count}</param>
+      
+      <param name="overwrite" type="boolean" gui-text="Overwrite existing output files" gui-description="If unchecked, existing files will be skipped">true</param>
+
+      <!-- PDF Options -->
+      <param name="merge_pdf" type="boolean" gui-text="Merge PDF files into single PDF file" gui-description="Note: Only effective when export format is PDF">false</param>
+      
+      <param name="delete_individual_pdfs" type="boolean" gui-text="Delete individual PDF files after merge" gui-description="Note: Only effective when merge PDF file option selected">false</param>
+      
+    </page>
+    
+    <!-- Advanced Options Tab -->
+    <page name="advanced_tab" gui-text="Advanced Options">
+      <!-- Logging and Debug -->
+       <label>Logging Details:</label>
+      <param name="enable_logging" type="boolean" gui-text="Create log file at output directory for debugging" gui-description="Enable detailed logging for troubleshooting">false</param>
+      
+      <param name="log_level" type="enum" gui-text="Log Level:" gui-description="Detail level for log file (only effective when logging is enabled)">
+        <item value="DEBUG">DEBUG (most detailed)</item>
+        <item value="INFO">INFO (normal detail)</item>
+        <item value="WARNING">WARNING (warnings only)</item>
+        <item value="ERROR">ERROR (errors only)</item>
+        <item value="CRITICAL">CRITICAL (critical only)</item>
+      </param>
+      
+      <param name="disable_log_timestamps" type="boolean" gui-text="Disable Date/Time Stamps in Log" gui-description="Remove timestamp prefixes from log entries for cleaner output">false</param>
+      
+      <!-- CSV Export Section -->
+      <separator/>
+      <label></label>
+      <label>CSV Generation Details:</label>
+      <param name="export_csv_enabled" type="boolean" gui-text="Export data to CSV" gui-description="Read SVG file and generate CSV file based on supported patterns">false</param>
+      
+      <param name="export_csv_path" type="path" mode="folder" gui-text="Export CSV File Path:" gui-description="Path for CSV export file">/tmp</param>
+      
+    </page>
+    
+    <!-- About Tab -->
+    <page name="about_tab" gui-text="About">
+      <label>InkAutoGen - Batch Processing</label>
+      <param name="about_title" type="description" gui-text="">InkAutoGen is a powerful Inkscape extension for automated batch processing of SVG templates using CSV data. </param>
+      <separator/>
+      
+      <!-- Version Information -->
+      <label>Version Information:</label>
+      <param name="about_version" type="description" gui-text="Version: 2.0.0">2.0.0</param>
+      <param name="about_build_date" type="description" gui-text="Build Date: 2026-01-26">2026-01-26</param>
+      <separator/>
+      
+      <!-- Author Information -->
+      <label>Author &amp; Contact:</label>
+      <param name="about_author" type="description" gui-text="Author: Siddha Siddhant">Siddha Siddhant</param>
+      <param name="about_email" type="description" gui-text="Email: dev@siddhasiddhant.com">dev@siddhasiddhant.com</param>
+      <param name="about_website" type="description" gui-text="Website: https://github.com/siddha-siddhant/InkAutoGen">https://github.com/siddhasiddhant/InkAutoGen</param>
+      <separator/>
+      
+      <!-- License Information -->
+      <label>License:</label>
+      <param name="about_license" type="description" gui-text="License: MIT License">MIT License</param>
+      <param name="about_license_url" type="description" gui-text="License URL: https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</param>
+      <separator/>
+      
+      <!-- Contributors -->
+      <label>Contributors:</label>
+      <param name="about_contributors" type="description" gui-text="">This project is made possible by the following contributors:</param>
+      <param name="contributor_list" type="description" gui-text="">Siddha Siddhant - Lead Developer &amp; Architect.</param>
+      <label>Special thanks to the Inkscape development team for providing excellent extension API and documentation.</label>
+      <separator/>
+      
+      <!-- Copyright -->
+      <label>Copyright &amp; Notices:</label>
+      <param name="about_copyright" type="description" gui-text="Copyright © 2026 Siddha Siddhant">Copyright © 2026 Siddha Siddhant</param>
+      <param name="about_rights" type="description" gui-text="All rights reserved. See LICENSE file for details.">All rights reserved. See LICENSE file for details.</param>
+    </page>
+  </param>
+  
+  <effect needs-live-preview="false">
+      <object-type>all</object-type>
+      <effects-menu>
+          <submenu name="Import/Export"/>
+      </effects-menu>
+  </effect>
+
+  <script>
+    <command reldir="extensions" interpreter="python">inkautogen.py</command>
+  </script>
+</inkscape-extension>

@@ -1,0 +1,2 @@
+Title,Subtitle,Unicode,TestBox##fill,TestCircle##stroke,TestImage,BackgroundLayer,ContentLayer,HiddenLayer
+Hello World,Test Subtitle,🌟 Unicode Test!,#FF0000,#00FF00,test.png,visible,visible,hidden
