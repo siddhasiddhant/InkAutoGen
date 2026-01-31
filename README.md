@@ -172,7 +172,7 @@ InkAutoGen/
 ## 🔧 Requirements
 
 - **Inkscape** 1.0+
-- **Python** 3.7+
+- **Python** 3.8+
 - **Dependencies**: lxml, chardet, PyPDF2 (auto-installed)
 
 ## 🎯 Demo
