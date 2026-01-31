@@ -47,8 +47,9 @@ InkAutoGen works by matching CSV column headers with SVG element labels. There a
 
 #### **1. Data Replacement Pattern: `<element_label>`**
 Replace content in SVG elements (text, images, etc.)
+Replace the visibility of layer (layer: visible, hide, show etc.)
 
-#### **2. Property Modification Pattern: `<element_label>##property>`**  
+#### **2. Property Modification Pattern: `<element_label>##<property>`**  
 Change properties/attributes of SVG elements (colors, fonts, sizes, etc.)
 
 ### **Step-by-Step Usage**
@@ -93,6 +94,14 @@ CSV Value:   John Doe
 Result:      Text element shows "John Doe"
 ```
 
+#### **Layer Visibility Control**
+```
+SVG Layer Name:  <show_background>
+CSV Header:      show_background
+CSV Value:       true/false
+Result:          Layer is shown/hidden based on CSV value
+```
+
 #### **Image Element Replacement**
 ```
 SVG Label:  <photo>
@@ -125,21 +134,14 @@ CSV Value:       #00ff00
 Result:          Frame border becomes green
 ```
 
-#### **Layer Visibility Control**
-```
-SVG Layer Name:  <show_background>
-CSV Header:      show_background
-CSV Value:       true/false
-Result:          Layer is shown/hidden based on CSV value
-```
 
 ## 🎯 Common Use Cases
 
-- **Certificates**: Personalize with `<name>`, `<course>`, `<date>`
-- **Business Cards**: `<name>`, `<title>`, `<email>`, `<photo>`, `<card>##fill`
-- **Marketing Materials**: Location-specific data using `<location>`, `<price>`, `<banner>##background`
-- **ID Badges**: `<employee_name>`, `<employee_id>`, `<photo>`, `<badge>##stroke`
-- **Product Labels**: `<product_name>`, `<sku>`, `<price>`, `<label>##font-weight`
+- **Certificates**: Personalize with `name`, `course`, `date`
+- **Business Cards**: `name`, `title`, `email`, `photo`, `card##fill`
+- **Marketing Materials**: Location-specific data using `location`, `price`, `banner##background`
+- **ID Badges**: `employee_name`, `employee id`, `photo`, `badge##stroke`
+- **Product Labels**: `product name`, `sku`, `price`, `label##font-weight`
 
 ## 🏗️ Architecture
 
@@ -173,6 +175,9 @@ InkAutoGen/
 - **Python** 3.7+
 - **Dependencies**: lxml, chardet, PyPDF2 (auto-installed)
 
+## 🎯 Demo
+A sample csv file and svg file with required resources are given in demo folder. Please try it yourself using the InkAutoGen extension in Inkscape. - see the [demo](demo).
+
 ## 📦 Installation
 
 ### Method 1: Setup Script (Recommended)
@@ -193,9 +198,9 @@ cp inkautogen.inx ~/.config/inkscape/extensions/
 ## 🎨 Template Creation
 
 ### Element Labels
-- **Text Replacement**: `<name>`, `<title>`, `<description>`
-- **Image Substitution**: `<photo>`, `<logo>`, `<background>`
-- **Property Modification**: `<button>##fill`, `<text>##font-size`
+- **Text Replacement**: `name`, `title`, `description`
+- **Image Substitution**: `photo`, `logo`, `background`
+- **Property Modification**: `button##fill`, `text##font-size`
 
 ### Supported Properties
 - Colors: `fill`, `stroke`
