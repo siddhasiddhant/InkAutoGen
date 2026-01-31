@@ -35,12 +35,12 @@ InkAutoGen uses **two fundamental patterns** to connect your CSV data with SVG e
 #### **Pattern 1: Data Replacement `<element_label>`**
 - **Purpose**: Replace the content of SVG elements
 - **Used for**: Text content, image files, visibility states
-- **Example**: `<name>`, `<photo>`, `<title>`
+- **Example**: `name`, `photo`, `title`
 
 #### **Pattern 2: Property Modification `<element_label>##property>`**
 - **Purpose**: Change properties/attributes of SVG elements  
 - **Used for**: Colors, fonts, sizes, positions, transformations
-- **Example**: `<button>##fill`, `<title>##font-size`, `<frame>##stroke`
+- **Example**: `button##fill`, `title##font-size`, `frame##stroke`
 
 ### Step 1: Design Your Template
 Create any SVG design in Inkscape that you want to customize with data.
@@ -51,9 +51,9 @@ For each element you want to customize:
 1. **Select the element** (text, image, shape, etc.)
 2. **Open Object Properties**: `Object → Object Properties` (or `Shift+Ctrl+O`)
 3. **Set the ID/Label** using angle brackets:
-   - Text elements: `<name>`, `<title>`, `<description>`
-   - Images: `<photo>`, `<logo>`, `<background>`
-   - Shapes: `<button>`, `<frame>`, `<badge>`
+   - Text elements: `name`, `title`, `description`
+   - Images: `photo`, `logo`, `background`
+   - Shapes: `button`, `frame`, `badge`
 
 ### Step 3: Label Naming Conventions
 
@@ -68,12 +68,12 @@ For each element you want to customize:
 
 #### Property Modification Labels
 ```
-<button>##fill           # Change button background color
-<title>##font-size       # Change title text size
-<frame>##stroke          # Change frame border color
-<text>##font-family      # Change text font
-<shape>##width           # Change element width
-<logo>##opacity          # Change logo transparency
+button##fill           # Change button background color
+title##font-size       # Change title text size
+frame##stroke          # Change frame border color
+text##font-family      # Change text font
+shape##width           # Change element width
+logo##opacity          # Change logo transparency
 ```
 
 ### Pattern Examples with Visual Results
@@ -81,11 +81,11 @@ For each element you want to customize:
 #### Example 1: Business Card Template
 ```
 SVG Elements & Labels:
-├── Text: <name> → "John Doe"
-├── Text: <title> → "Software Engineer"  
-├── Image: <photo> → "john.jpg"
-├── Rectangle: <card>##fill → "#ffffff"
-└── Text: <title>##font-size → "24"
+├── Text: name → "John Doe"
+├── Text: title → "Software Engineer"  
+├── Image: photo → "john.jpg"
+├── Rectangle: card##fill → "#ffffff"
+└── Text: title##font-size → "24"
 
 CSV Headers:
 name,title,photo,card##fill,title##font-size
@@ -96,11 +96,11 @@ Result: Personalized business card with white background and 24px title
 #### Example 2: Certificate Template
 ```
 SVG Elements & Labels:
-├── Text: <recipient_name> → "Jane Smith"
-├── Text: <course_name> → "Python Programming"
-├── Text: <completion_date> → "2024-01-15"
-├── Border: <certificate>##stroke → "#gold"
-└── Seal: <seal>##opacity → "0.8"
+├── Text: recipient_name → "Jane Smith"
+├── Text: course_name → "Python Programming"
+├── Text: completion_date → "2024-01-15"
+├── Border: certificate##stroke → "#gold"
+└── Seal: seal##opacity → "0.8"
 
 CSV Headers:
 recipient_name,course_name,completion_date,certificate##stroke,seal##opacity
@@ -138,9 +138,9 @@ Bob Johnson,Project Manager,bob@company.com,Operations,bob.jpg
 ```
 
 #### How It Works:
-- `name` column → finds SVG element labeled `<name>` and replaces content with "John Doe"
-- `title` column → finds SVG element labeled `<title>` and replaces content with "Senior Engineer"
-- `photo` column → finds SVG element labeled `<photo>` and replaces with "john.jpg"
+- `name` column → finds SVG element labeled `name` and replaces content with "John Doe"
+- `title` column → finds SVG element labeled `title` and replaces content with "Senior Engineer"
+- `photo` column → finds SVG element labeled `photo` and replaces with "john.jpg"
 
 ### CSV with Property Modifications
 Include property columns using the `##` syntax to change element properties:
@@ -153,21 +153,21 @@ Bob Johnson,bob@company.com,#0000ff,28,#666666
 ```
 
 #### How Properties Work:
-- `button##fill` → finds element labeled `<button>` and sets its background color
-- `title##font-size` → finds element labeled `<title>` and sets font size to 24px
-- `frame##stroke` → finds element labeled `<frame>` and sets border color
+- `button##fill` → finds element labeled `button` and sets its background color
+- `title##font-size` → finds element labeled `title` and sets font size to 24px
+- `frame##stroke` → finds element labeled `frame` and sets border color
 
 ### Complete Example: Employee ID Cards
 
 #### SVG Template Setup:
 ```
-├── Text: <employee_name>
-├── Text: <employee_title>
-├── Text: <employee_id>
-├── Image: <employee_photo>
-├── Rectangle: <card_background>##fill
-├── Text: <company_logo>##width
-└── Border: <card_border>##stroke
+├── Text: employee_name
+├── Text: employee_title
+├── Text: employee_id
+├── Image: employee_photo
+├── Rectangle: card_background##fill
+├── Text: company_logo##width
+└── Border: card_border##stroke
 ```
 
 #### CSV Data:
@@ -226,12 +226,12 @@ frame##height  # 100, 100px
 
 #### Column Types
 1. **Element Values**: Direct content replacement
-   - `<name>` → "John Doe"
-   - `<photo>` → "john.jpg"
+   - `name` → "John Doe"
+   - `photo` → "john.jpg"
 
 2. **Properties**: Style modifications
-   - `<button>##fill>` → "#ff0000"
-   - `<title>##font-size>` → "24"
+   - `button##fill` → "#ff0000"
+   - `title##font-size` → "24"
 
 #### Special Values
 - **Empty cells**: Skip replacement
@@ -277,15 +277,16 @@ Generate dynamic filenames using CSV data and system values:
 |-------------|-------------|---------|
 | `{column_name}` | CSV column value | `{name}` → "John_Doe" |
 | `{count}` | Sequential number | `output_{count}` → "output_1" |
-| `{date}` | Current date | `file_{date}` → "file_20240126" |
+| `{date}` | Current date | `file_{date}` → "file_20260126" |
+| `{date:format}` | Current date | `file_{date:dd-mm-yyy}` → "file_26-01-2026" |
 | `{time}` | Current time | `file_{time}` → "file_143022" |
-| `{timestamp}` | Date + time | `{timestamp}` → "20240126_143022" |
+| `{timestamp}` | Date + time | `{timestamp}` → "20260126_143022" |
 
 #### Pattern Examples
 ```
-certificate_{name}_{date}.png         # certificate_John_Doe_20240126.png
+certificate_{name}_{date}.png         # certificate_John_Doe_20260126.png
 badge_{department}_{count}.pdf        # badge_Engineering_001.pdf
-id_card_{employee_id}_{timestamp}.svg  # id_card_EMP001_20240126_143022.svg
+id_card_{employee_id}_{timestamp}.svg  # id_card_EMP001_20260126_143022.svg
 ```
 
 ### Real-World Pattern Examples
@@ -293,11 +294,11 @@ id_card_{employee_id}_{timestamp}.svg  # id_card_EMP001_20240126_143022.svg
 #### Example 1: Conference Badges
 ```
 SVG Template Labels:
-├── Text: <attendee_name>
-├── Text: <company_name>
-├── Image: <company_logo>
-├── Rectangle: <badge_color>##fill
-└── Text: <attendee_type>
+├── Text: attendee_name
+├── Text: company_name
+├── Image: company_logo
+├── Rectangle: badge_color##fill
+└── Text: attendee_type
 
 CSV Data:
 attendee_name,company_name,company_logo,badge_color##fill,attendee_type
@@ -312,12 +313,12 @@ badge_Jane_Doe_Attendee.pdf
 #### Example 2: Product Labels
 ```
 SVG Template Labels:
-├── Text: <product_name>
-├── Text: <product_sku>
-├── Text: <product_price>
-├── Rectangle: <label_background>##fill
-├── Text: <price_text>##font-size
-└── Barcode: <product_barcode>
+├── Text: product_name
+├── Text: product_sku
+├── Text: product_price
+├── Rectangle: label_background##fill
+├── Text: price_text##font-size
+└── Barcode: product_barcode
 
 CSV Data:
 product_name,product_sku,product_price,label_background##fill,price_text##font-size,product_barcode
@@ -332,12 +333,12 @@ label_Widget_B_W002.pdf
 #### Example 3: Event Invitations
 ```
 SVG Template Labels:
-├── Text: <guest_name>
-├── Text: <event_title>
-├── Text: <event_date>
-├── Text: <event_time>
-├── Rectangle: <invitation_style>##fill
-└── Text: <title_text>##font-weight
+├── Text: guest_name
+├── Text: event_title
+├── Text: event_date
+├── Text: event_time
+├── Rectangle: invitation_style##fill
+└── Text: title_text##font-weight
 
 CSV Data:
 guest_name,event_title,event_date,event_time,invitation_style##fill,title_text##font-weight
@@ -352,9 +353,9 @@ invitation_Bob_Williams_Wedding.pdf
 ### Pattern Tips and Best Practices
 
 #### 1. Consistent Labeling
-- Use descriptive labels: `<customer_name>` instead of `<name1>`
-- Group related elements: `<header_text>`, `<header_size>##font-size`
-- Use underscores for multi-word labels: `<first_name>`, `<last_name>`
+- Use descriptive labels: `customer_name` instead of `name1`
+- Group related elements: `header_text`, `header_size##font-size`
+- Use underscores for multi-word labels: `first_name`, `last_name`
 
 #### 2. Organized CSV Structure
 ```
@@ -375,11 +376,8 @@ Before running batch processing:
 
 #### 4. Common Pattern Mistakes to Avoid
 
-❌ **Incorrect**: `Button##fill` (missing angle brackets)
-✅ **Correct**: `<button>##fill`
-
-❌ **Incorrect**: `<name>FontSize` (missing ## separator)
-✅ **Correct**: `<name>##font-size`
+❌ **Incorrect**: `nameFontSize` (missing ## separator)
+✅ **Correct**: `name##font-size`
 
 ❌ **Incorrect**: `button color` (spaces in property names)
 ✅ **Correct**: `button##fill` or `button##background-color`
@@ -393,7 +391,7 @@ id_card_{name}_{timestamp}.svg
 ### Layer Visibility Control
 Control which layers are visible based on CSV data:
 
-1. **Label your layers**: Use layer names like `<show_layer>`, `<hide_layer>`
+1. **Label your layers**: Use layer names like `show_layer`, `hide_layer`
 2. **Add CSV columns**: Include columns matching layer names
 3. **Use boolean values**: `true`/`false` or `1`/`0`
 
@@ -518,10 +516,10 @@ Jane Smith,Web Design,2024-01-16,Prof. Johnson
 ```
 
 **Element Labels**:
-- `<name>`: Recipient name
-- `<course>`: Course title
-- `<date>`: Completion date
-- `<instructor>`: Instructor name
+- `name`: Recipient name
+- `course`: Course title
+- `date`: Completion date
+- `instructor`: Instructor name
 
 ### Example 2: Business Cards
 **Template**: Business card with employee information
@@ -533,12 +531,12 @@ Jane Smith,Designer,jane@company.com,555-0124,jane.png,#f0f0f0
 ```
 
 **Element Labels**:
-- `<name>`: Employee name
-- `<title>`: Job title
-- `<email>`: Email address
-- `<phone>`: Phone number
-- `<photo>`: Employee photo
-- `<card>##fill`: Background color
+- `name`: Employee name
+- `title`: Job title
+- `email`: Email address
+- `phone`: Phone number
+- `photo`: Employee photo
+- `card##fill`: Background color
 
 ### Example 3: Product Labels
 **Template**: Product label with dynamic information
@@ -550,19 +548,19 @@ Widget B,29.99,W002,Deluxe widget,200
 ```
 
 **Element Labels**:
-- `<product>`: Product name
-- `<price>`: Price
-- `<sku>`: Product code
-- `<description>`: Product description
-- `<logo>##width`: Logo width
+- `product`: Product name
+- `price`: Price
+- `sku`: Product code
+- `description`: Product description
+- `logo##width`: Logo width
 
 ## 📋 Quick Reference - Pattern Cheat Sheet
 
 ### Basic Syntax
 | Pattern Type | Syntax | Example | Use Case |
 |-------------|---------|---------|-----------|
-| Data Replacement | `<element_label>` | `<name>`, `<photo>` | Replace text, images, visibility |
-| Property Change | `<element_label>##property>` | `<button>##fill`, `<text>##font-size` | Change colors, fonts, sizes |
+| Data Replacement | `<element_label>` | `name`, `photo` | Replace text, images |
+| Property Change | `<element_label>##<property>` | `button##fill`, `text##font-size` | Change colors, fonts sizes |
 
 ### Common Property Names
 | Property | What It Changes | Valid Values |
