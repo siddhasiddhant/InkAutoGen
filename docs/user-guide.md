@@ -37,7 +37,7 @@ InkAutoGen uses **two fundamental patterns** to connect your CSV data with SVG e
 - **Used for**: Text content, image files, visibility states
 - **Example**: `name`, `photo`, `title`
 
-#### **Pattern 2: Property Modification `<element_label>##property>`**
+#### **Pattern 2: Property Modification `<element_label>##<property>`**
 - **Purpose**: Change properties/attributes of SVG elements  
 - **Used for**: Colors, fonts, sizes, positions, transformations
 - **Example**: `button##fill`, `title##font-size`, `frame##stroke`
