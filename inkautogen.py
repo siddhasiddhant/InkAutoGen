@@ -40,7 +40,7 @@ import uuid
 import logging
 from pathlib import Path
 from typing import Optional, List
-
+import copy
 
 # ============================================================================
 # Import and Library Availability Check
@@ -323,7 +323,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
         if logger:
             logger.debug("All modules initialized successfully")
 
-    def process_batch(self, csv_data: List[dict], csv_classification: dict, missing_elements: List[str], svg_str: str
+    def process_batch(self, csv_data: List[dict], csv_classification: dict, missing_elements: List[str], svg_root: any
                       , output_dir: str, export_format: str, dpi: int, filename_pattern: str, overwrite: bool
                       , apply_layer_visibility: bool, removed_csv_data: List[dict]) -> tuple[List[str], List[str]]:
         """
@@ -336,7 +336,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
             csv_data: List of CSV row dictionaries
             csv_classification: Classified CSV data structure
             missing_elements: List of missing SVG elements
-            svg_str: Serialized SVG template string
+            svg_root: Serialized SVG template string
             output_dir: Directory for output files
             export_format: Target export format
             dpi: Resolution for raster formats
@@ -362,6 +362,9 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
             self.logger.info(f"Temp working directory: {temp_working_dir}")
             self.logger.info(f"Processing {len(csv_data)} rows...")
 
+        if apply_layer_visibility:
+            tmp_svg_root = svg_root
+
         # Process each CSV row
         for idx, row in enumerate(csv_data):
             if self.logger:
@@ -374,11 +377,10 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
             # Generate unique temporary SVG filename
             temp_svg_file = os.path.join(temp_working_dir, f'temp_{uuid.uuid4().hex}.svg')
 
-            try:
-                # Parse template string to create new XML tree
-                parser = etree.XMLParser(remove_blank_text=False, remove_comments=False)
-                temp_root = etree.fromstring(svg_str, parser=parser)
+            if apply_layer_visibility:
+                svg_root = copy.deepcopy(tmp_svg_root)
 
+            try:
                 # Initialize statistics tracking
                 stats = {
                     'text_replaced': 0,
@@ -388,7 +390,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                     'errors': 0
                 }
 
-                # First process layer visibility for temp_root
+                # First process layer visibility for svg_root
                 if self.logger:
                     self.logger.debug('First processing layer visibility.')
 
@@ -400,11 +402,11 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                                 # insert into elDic
                                 elDic[id] = row[id].strip().lower()
                     if len(elDic) > 0:
-                        self.element_processor.apply_layer_visibility(svg_root=temp_root, layer_data=elDic, stats=stats)
+                        self.element_processor.apply_layer_visibility(svg_root=svg_root, layer_data=elDic, stats=stats)
 
                 # Check condition for consideration of visible layer only
                 if apply_layer_visibility:
-                    self.element_processor.remove_invisible_layers(svg_root=temp_root,stats=stats)
+                    self.element_processor.remove_invisible_layers(svg_root=svg_root,stats=stats)
                     if self.logger:
                         self.logger.debug("Removed invisible layers from template SVG root")
 
@@ -414,7 +416,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                     
                 for id, data in csv_classification['property_mapping'].items():
                     if id not in missing_elements:
-                        elements = self.element_processor.find_elements_by_name(temp_root,data.get('element_name'))
+                        elements = self.element_processor.find_elements_by_name(svg_root,data.get('element_name'))
                         for element in elements:
                             self.element_processor.process_property(element=element, property_name=data.get('property_name')
                                                                     ,value=row[id], element_type=data.get('element_type'))
@@ -425,7 +427,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
 
                 for id, data in csv_classification['element_mapping'].items():
                     if id not in missing_elements:
-                        elements = self.element_processor.find_elements_by_name(temp_root,data.get('element_name'))
+                        elements = self.element_processor.find_elements_by_name(svg_root,data.get('element_name'))
                         for element in elements:
                             if data.get('element_type') == 'text':
                                 self.element_processor.process_text_element(element=element
@@ -435,7 +437,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                                                                              , variable_name=data.get('element_name'), value=row[id])
                 
                 # Serialize to string with proper UTF-8 encoding for Unicode support
-                output_bytes = etree.tostring(temp_root, encoding='utf-8', pretty_print=False, xml_declaration=False)
+                output_bytes = etree.tostring(svg_root, encoding='utf-8', pretty_print=False, xml_declaration=False)
                 output_str = output_bytes.decode('utf-8')
 
                 # Write processed SVG to temporary file
@@ -706,7 +708,14 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
         # Setup logging
         self.logger = utilities.setup_logging(output_path, enable_logging, log_level, disable_log_timestamps)
 
-        svg_root = self.document.getroot()
+        svg_root = copy.deepcopy(self.document.getroot())
+
+        # ====================================================================
+        # Phase 2: Module Initialization
+        # ====================================================================
+        
+        # Initialize all processing modules with CSV path for image resolution
+        self.initialize_modules(self.logger, csv_path, output_path, relative_path)
 
         # Handle CSV export if requested
         if export_csv_enabled and export_csv_path:
@@ -714,9 +723,6 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                 self.logger.info("=" * 80)
                 self.logger.info("CSV EXPORT MODE")
                 self.logger.info("=" * 80)
-            
-            # Initialize modules for CSV export
-            self.initialize_modules(self.logger, csv_path, output_path, relative_path)
             
             if self.logger:
                 self.logger.info("Starting SVG to CSV export...")  
@@ -734,13 +740,6 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                     self.logger.warning("CSV export failed")
             return
         
-        # ====================================================================
-        # Phase 2: Module Initialization
-        # ====================================================================
-        
-        # Initialize all processing modules with CSV path for image resolution
-        self.initialize_modules(self.logger, csv_path, output_path, relative_path)
-
         # Log configuration parameters
         if self.logger:
             self.logger.info("=" * 80)
@@ -830,13 +829,9 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
             self.logger.info("TEMPLATE PREPARATION")
             self.logger.info("=" * 80)
             self.logger.debug("Cleaning template SVG tree...")
-                
-        # Serialize template to string for reuse - use UTF-8 encoding to handle Unicode properly
-        svg_bytes = etree.tostring(svg_root, encoding='utf-8', pretty_print=True, xml_declaration=False)
-        svg_str = svg_bytes.decode('utf-8')
 
         if self.logger:
-            self.logger.info(f"Template SVG size: {len(svg_str)} characters")
+            self.logger.info(f"Template SVG size: {len(svg_root)} characters")
             self.logger.debug(f"Template root element: {svg_root.tag}")
 
         # ====================================================================
@@ -893,7 +888,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
         # ====================================================================
         
         generated_files, pdf_files = self.process_batch(csv_data=csv_data, csv_classification=csv_classification, missing_elements=missing_elements
-                                                        , svg_str=svg_str, output_dir=output_path, export_format=export_format, dpi=dpi
+                                                        , svg_root=svg_root, output_dir=output_path, export_format=export_format, dpi=dpi
                                                         , filename_pattern=filename_pattern, overwrite=overwrite
                                                         , apply_layer_visibility=apply_layer_visibility, removed_csv_data=removed_csv_data)
 
