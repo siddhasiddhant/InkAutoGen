@@ -124,6 +124,8 @@ PRIORITY_ENCODINGS: List[str] = [
 LAYER_VISIBILITY_MAP: Dict[str, str] = {
     "invisible": "none",
     "visible": "inline",
+    "no": "none",
+    "yes": "inline",
     "hide": "none",
     "show": "inline", 
     "0": "none",
