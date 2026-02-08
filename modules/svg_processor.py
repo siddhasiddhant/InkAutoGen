@@ -778,7 +778,8 @@ class SVGElementProcessor:
         if elements:
             for i, elem in enumerate(elements):
                 attrs = utilities.get_element_attributes(elem)
-                self.logger.debug(f"      {i+1}: tag={attrs['tag']}, id={attrs['id']}, label={attrs['label']}")
+                if self.logger:
+                    self.logger.debug(f"      {i+1}: tag={attrs['tag']}, id={attrs['id']}, label={attrs['label']}")
     
         # Cache result
         self._element_cache[cache_key] = elements
