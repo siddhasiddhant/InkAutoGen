@@ -449,7 +449,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                     self.logger.debug(f"Output SVG size: {len(output_str)} characters")
 
                 # Generate output filename with CSV column support
-                output_filename = utilities.generate_output_filename(filename_pattern, idx, row, removed_csv_data[idx], self.logger, len(csv_data))
+                output_filename = utilities.generate_output_filename(filename_pattern, idx, row, None if len(removed_csv_data) <= idx else removed_csv_data[idx] , self.logger, len(csv_data))
 
                 # Only add extension if not already present in filename
                 if not output_filename.lower().endswith(f'.{export_format.lower()}'):
@@ -838,6 +838,10 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
         # Phase 4.5: Filter Missing Elements from CSV Data
         # ====================================================================
         
+        # Initialize default values for variables used in process_batch
+        missing_elements: List[str] = []
+        removed_csv_data: List[dict] = []
+        
         if csv_classification and csv_classification.get('missing_elements'):
             missing_elements = csv_classification.get('missing_elements', [])
             if self.logger:
@@ -847,7 +851,7 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
                 self.logger.info(f"Found {len(missing_elements)} CSV headers referencing missing elements: {missing_elements}")
             
             # Remove missing element columns from all CSV rows
-            csv_data, removed_csv_data  = self.csv_reader.filter_csv_data_by_missing_elements(csv_data, missing_elements)
+            csv_data, removed_csv_data = self.csv_reader.filter_csv_data_by_missing_elements(csv_data, missing_elements)
             
             if self.logger:
                 self.logger.info(f"Total filtered cells: {len(missing_elements) * len(csv_data)}")
@@ -857,13 +861,29 @@ class InkAutoGen(Effect if INKSCAPE_AVAILABLE else object):
             # Check if all elements were filtered out
             if not csv_data or not csv_data[0]:
                 if self.logger:
-                    self.logger.warning("All CSV columns reference missing elements - no data to process")
+                    self.logger.warning("All CSV columns reference missing SVG elements - no data to process")
                 print("Warning: All CSV columns reference missing SVG elements. No files will be generated.", file=sys.stderr)
                 return
             elif self.logger:
                 final_col_count = len(csv_data[0])
                 self.logger.info(f"Proceeding with batch processing using {final_col_count} valid columns")
-        
+            
+            # Also filter classification to remove missing elements references
+            if csv_classification and missing_elements:
+                missing_set = set(missing_elements)
+                # Update element_mapping to remove missing elements
+                csv_classification['element_mapping'] = {
+                    k: v for k, v in csv_classification.get('element_mapping', {}).items() 
+                    if k not in missing_set
+                }
+                # Update property_mapping to remove missing elements
+                csv_classification['property_mapping'] = {
+                    k: v for k, v in csv_classification.get('property_mapping', {}).items() 
+                    if k not in missing_set
+                }
+                if self.logger:
+                    self.logger.info(f"Updated classification: {len(csv_classification['element_mapping'])} elements, {len(csv_classification['property_mapping'])} properties")
+            
         if False:
             self.logger.info("-" * 80)
             self.logger.info('csv data after filtering missing elements:')
