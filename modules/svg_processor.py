@@ -280,7 +280,7 @@ class SVGElementProcessor:
             if self.logger:
                 self.logger.debug('Using relative path for image file.')
 
-            final_href = found_path['relative']
+            final_href = found_path['relative'] if found_path and 'relative' in found_path else value_str
         
         if original_href != final_href:
             element.set(f"{{{config.SVG_NAMESPACES['xlink']}}}href", final_href)
@@ -759,20 +759,19 @@ class SVGElementProcessor:
         if self.logger:
             self.logger.debug(f"    🔍 Searching for elements with name: {name}")
         
-        # First search by label
-        is_label_search = True
-        elements = utilities.xpath_query(svg_root, "labeled_elements", name=name)
-        
-        if not elements:
-            # If not found by label, search by ID
-            if self.logger:
-                self.logger.debug(f"    ❌ No elements found by label, searching by ID: {name}")
-
-            is_label_search = False
-            elements = utilities.xpath_query(svg_root, "id_elements", name=name)
+        # Optimize: Use single XPath query that checks both label and ID
+        try:
+            # Combined XPath query for better performance
+            xpath_expr = f".//*[@inkscape:label='{name}' or @id='{name}']"
+            elements = svg_root.xpath(xpath_expr, namespaces=config.SVG_NAMESPACES)
+        except Exception:
+            # Fallback to separate queries if combined query fails
+            elements = utilities.xpath_query(svg_root, "labeled_elements", name=name)
+            if not elements:
+                elements = utilities.xpath_query(svg_root, "id_elements", name=name)
         
         if self.logger:
-            search_type = "by label" if is_label_search else "by ID"
+            search_type = "by label/ID" if elements else "No match"
             self.logger.debug(f"    {'📍 Found' if elements else '❌ No'} {len(elements)} elements {search_type} for: {name}")
             
         if elements:

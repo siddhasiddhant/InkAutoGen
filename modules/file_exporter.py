@@ -313,60 +313,29 @@ class FileExporter:
         if self.logger:
             self.logger.debug("Validating export parameters...")
         
-        # Validate input SVG exists
-        if not input_svg_path or not os.path.exists(input_svg_path):
-            if self.logger:
-                self.logger.error(f"Input SVG file does not exist: {input_svg_path}")
-            raise ValidationError("Input SVG file does not exist", field_name="input_svg_path")
+        # Consolidated validation checks
+        validation_checks = [
+            (input_svg_path and os.path.exists(input_svg_path), 
+             "Input SVG file does not exist", "input_svg_path"),
+            (output_path, 
+             "Output path cannot be empty", "output_path"),
+            (export_format in config.SUPPORTED_EXPORT_FORMATS,
+             f"Unsupported export format: {export_format}", "export_format"),
+            (isinstance(dpi, int) and 72 <= dpi <= 1200,
+             f"DPI must be between 72 and 1200, got: {dpi}", "dpi")
+        ]
         
-        if self.logger:
-            self.logger.debug(f"Input SVG file validated: {input_svg_path}")
+        for check, error_msg, field_name in validation_checks:
+            if not check:
+                if self.logger:
+                    self.logger.error(error_msg)
+                raise ValidationError(error_msg, field_name=field_name, value=str(dpi) if field_name == "dpi" else None)
         
-        # Validate output path is not empty
-        if not output_path:
-            if self.logger:
-                self.logger.error("Output path cannot be empty")
-            raise ValidationError("Output path cannot be empty", field_name="output_path")
-        
-        # Validate output path for security
+        # Validate output path security separately
         FileValidator.validate_file_path(output_path, config.ALLOWED_IMAGE_EXTENSIONS)
         
         if self.logger:
-            self.logger.debug(f"Output path validated: {output_path}")
-        
-        # Validate export format is supported
-        if export_format not in config.SUPPORTED_EXPORT_FORMATS:
-            if self.logger:
-                self.logger.error(f"Unsupported export format: {export_format}")
-                self.logger.debug(f"Supported formats: {config.SUPPORTED_EXPORT_FORMATS}")
-            raise ValidationError(
-                f"Unsupported export format: {export_format}",
-                field_name="export_format",
-                value=export_format
-            )
-
-        if not isinstance(dpi, int) or dpi < 72 or dpi > 1200:
-            raise ValidationError(
-                f"DPI must be between 72 and 1200, got: {dpi}",
-                field_name="dpi",
-                value=str(dpi)
-            )
-        
-        if self.logger:
-            self.logger.debug(f"Export format validated: {export_format}")
-        
-        # Validate DPI range
-        if not isinstance(dpi, int) or dpi < 72 or dpi > 1200:
-            if self.logger:
-                self.logger.error(f"Invalid DPI: {dpi}")
-            raise ValidationError(
-                f"DPI must be between 72 and 1200, got: {dpi}",
-                field_name="dpi",
-                field_value=str(dpi)
-            )
-        
-        if self.logger:
-            self.logger.debug(f"DPI validated: {dpi}")
+            self.logger.debug("All export parameters validated successfully")
     
     def _export_svg(self, input_svg_path: str, output_path: str) -> bool:
         """

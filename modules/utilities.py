@@ -259,7 +259,7 @@ def generate_output_filename(filename_pattern: str, idx: int, row: Dict[str, str
             filename_pattern = filename_pattern.replace(full_match, value)
             if logger:
                 logger.debug(f"Replaced %{column_name}% with: {value}")
-        elif column_name in removed_row:
+        elif removed_row and column_name in removed_row:
             value = str(removed_row[column_name])
             filename_pattern = filename_pattern.replace(full_match, value)
             if logger:

@@ -109,7 +109,7 @@ class CSVReader:
             FileSecurityError: If file fails security validation
             
         Example:
-            >>> reader = CSVReader(logger)
+            >>> reader = CSVReader()
             >>> encoding = reader.detect_encoding('data.csv')
             >>> print(f"Detected: {encoding}")
             Detected: utf-8
@@ -138,47 +138,27 @@ class CSVReader:
                 self.logger.error(f"Security validation failed: {e}")
             raise
         
-        # Step 3: Try chardet library (most accurate method)
-        if self.logger:
-            self.logger.debug("Step 3: Attempting chardet detection")
-        detected_encoding = self._detect_with_chardet(file_path)
-        if detected_encoding:
-            self._encoding_cache[file_path] = detected_encoding
+        # Step 3-5: Try detection methods in order of reliability
+        detection_methods = [
+            ("chardet", self._detect_with_chardet),
+            ("BOM", self._detect_bom),
+            ("trial-and-error", self._detect_by_trial)
+        ]
+        
+        for step_idx, (method_name, method) in enumerate(detection_methods, start=3):
             if self.logger:
-                self.logger.info(f"✓ Detected file encoding with chardet: {detected_encoding}")
-                self.logger.debug(f"Encoding cached for: {file_path}")
-            return detected_encoding
-        
-        if self.logger:
-            self.logger.debug("chardet detection failed, trying next method")
-        
-        # Step 4: BOM detection for UTF variants (UTF-8, UTF-16, UTF-32)
-        if self.logger:
-            self.logger.debug("Step 4: Attempting BOM detection")
-        detected_encoding = self._detect_bom(file_path)
-        if detected_encoding:
-            self._encoding_cache[file_path] = detected_encoding
+                self.logger.debug(f"Step {step_idx}: Attempting {method_name} detection")
+            
+            detected_encoding = method(file_path)
+            if detected_encoding:
+                self._encoding_cache[file_path] = detected_encoding
+                if self.logger:
+                    self.logger.info(f"✓ Detected file encoding with {method_name}: {detected_encoding}")
+                    self.logger.debug(f"Encoding cached for: {file_path}")
+                return detected_encoding
+            
             if self.logger:
-                self.logger.info(f"✓ Detected file encoding with BOM: {detected_encoding}")
-                self.logger.debug(f"Encoding cached for: {file_path}")
-            return detected_encoding
-        
-        if self.logger:
-            self.logger.debug("BOM detection failed, trying next method")
-        
-        # Step 5: Try common encodings with validation
-        if self.logger:
-            self.logger.debug("Step 5: Attempting trial-and-error detection")
-        detected_encoding = self._detect_by_trial(file_path)
-        if detected_encoding:
-            self._encoding_cache[file_path] = detected_encoding
-            if self.logger:
-                self.logger.info(f"✓ Detected file encoding by trial: {detected_encoding}")
-                self.logger.debug(f"Encoding cached for: {file_path}")
-            return detected_encoding
-        
-        if self.logger:
-            self.logger.debug("Trial detection failed, using fallback")
+                self.logger.debug(f"{method_name} detection failed, trying next method")
         
         # Step 6: Fallback to utf-8 with error handling
         if self.logger:
@@ -752,7 +732,7 @@ class CSVReader:
             Filtered CSV data with missing element columns removed
         """
         if not data or not missing_elements:
-            return data
+            return data, []
         
         filtered_data = []
         removed_data = []
@@ -999,13 +979,4 @@ class CSVReader:
                 error_msg,
                 file_path=csv_path
             ) from e
-            
-        except Exception as e:
-            if self.logger:
-                self.logger.error(f"Error getting CSV info: {e}")
-            return {
-                "file_path": csv_path,
-                "error": str(e),
-                "is_valid": False
-            }
 
